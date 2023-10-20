@@ -1,25 +1,29 @@
-export interface PointrPoints {
-  question: string;
-  answer: string;
-  createdAt: string;
-}
-
-export interface PointrDraft {
+export interface WTOnboarding {
   id: string;
-  userId: string;
-  userKey: string;
-  answersRequired: number;
-  redirectUrl: string;
-  ownerId: string;
-  createdAt: string;
-  updatedAt: string;
+  link: string;
+  started_at: string;
+  completed_at: string;
+  api_token_id: string;
+  user_id: string;
+  user: WTUser;
 }
 
-export interface DraftUrl {
-  url: string;
-  draftId: string;
+export interface WTUser {
+  id: string;
+  first_name: string;
+  last_name: string;
+  points: WTPoint[];
 }
 
-export interface Draft extends PointrDraft, DraftUrl {
-  points?: PointrPoints[];
+export interface WTPoint {
+  id: string;
+  answer: string;
+  question_id: string;
+  question: WTQuestion;
+}
+
+export interface WTQuestion {
+  id: string;
+  text: string;
+  order: number;
 }

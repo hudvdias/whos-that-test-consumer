@@ -1,47 +1,34 @@
 "use client";
 
 import { api } from "@/api";
-import { Draft, DraftUrl, PointrDraft } from "@/interfaces";
-import { useState } from "react";
+import { WTOnboarding } from "@/interfaces";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const [email, setEmail] = useState<string>("");
-  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [onboardings, setOnboardings] = useState<WTOnboarding[]>([]);
 
-  const onDraftCreate = async () => {
-    const draftResponse = await api.post<PointrDraft>("/draft", {
-      userEmail: email,
-      userKey: email,
-      redirectUrl: "http://localhost:3333",
-      answersRequired: 10,
+  const onOnboardingCreate = async () => {
+    await api.post<WTOnboarding>("/third-party-onboardings", {
+      email,
+      first_name: "Test",
+      last_name: "Fake Consumer",
     });
 
-    const urlResponse = await api.post<DraftUrl>("/draft/url", { userKey: email });
-
-    const draft: Draft = {
-      ...draftResponse.data,
-      ...urlResponse.data,
-    };
-
-    setDrafts([...drafts, draft]);
+    await listOnboardings();
   };
 
-  const onGetPoints = async (userKey: string) => {
-    const pointsResponse = await api.get(`/draft/${userKey}/points`);
+  const listOnboardings = async () => {
+    const onboardingsResponse = await api.get("/third-party-onboardings");
 
-    setDrafts(
-      drafts.map((draft) => {
-        if (draft.userKey === userKey) {
-          return {
-            ...draft,
-            points: pointsResponse.data,
-          };
-        }
+    const onboardings = onboardingsResponse.data;
 
-        return draft;
-      })
-    );
+    setOnboardings(onboardings);
   };
+
+  useEffect(() => {
+    listOnboardings();
+  }, []);
 
   return (
     <main className="flex flex-col gap-4 bg-gray-100 w-screen h-screen p-8">
@@ -55,32 +42,31 @@ export default function Home() {
           name="email"
           onChange={(event) => setEmail(event.target.value)}
         />
-        <button className="h-8 px-6 bg-blue-500 rounded text-white" onClick={onDraftCreate}>
+        <button className="h-8 px-6 bg-blue-500 rounded text-white" onClick={onOnboardingCreate}>
           Create new draft
         </button>
       </div>
 
-      <p>Drafts:</p>
+      <p>Onboardings:</p>
 
-      {drafts.map((draft) => {
+      {onboardings.map((onboarding) => {
         return (
-          <div key={draft.id} className="bg-white shadow rounded p-4 flex gap-4 flex-col">
-            <p>ID: {draft.id}</p>
-            <p>User: {draft.userKey}</p>
-            <p>Link: {draft.url}</p>
+          <div key={onboarding.id} className="bg-white shadow rounded p-4 flex gap-4 flex-col">
+            <p>Onboarding ID: {onboarding.id}</p>
+            <p>
+              User: {onboarding.user.first_name} {onboarding.user.last_name}
+            </p>
+            <p>Link: {onboarding.link}</p>
+            <p>Started at: {onboarding.started_at}</p>
+            <p>Completed at: {onboarding.completed_at}</p>
 
-            <div className="flex gap-6 items-center">
-              <span>Points</span>
-              <button className="h-8 px-6 bg-blue-500 rounded text-white" onClick={() => onGetPoints(draft.userKey)}>
-                Get Points
-              </button>
-            </div>
+            <p>Points</p>
 
-            {draft.points &&
-              draft.points.map((point, index) => {
+            {onboarding.user.points &&
+              onboarding.user.points.map((point, index) => {
                 return (
                   <div key={index}>
-                    <p>{point.question}</p>
+                    <p>{point.question.text}</p>
                     <p>{point.answer}</p>
                   </div>
                 );
