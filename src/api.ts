@@ -1,10 +1,10 @@
 import Axios from "axios";
-import { token } from "./constants";
+import "dotenv";
 
 export const api = Axios.create({
-  baseURL: "http://localhost:3333", // -> Local
+  baseURL: process.env.NEXT_PUBLIC_WT_API_URL,
   headers: {
-    Authorization: `Bearer ${token}`,
+    Authorization: `Bearer ${process.env.NEXT_PUBLIC_WT_API_TOKEN}`,
     "x-client-type": "WebApp",
   },
 });
